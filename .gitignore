@@ -1,2 +1,5 @@
 .streamlit/
 lib/
+database_report.pdf
+graph.html
+er_diagram
