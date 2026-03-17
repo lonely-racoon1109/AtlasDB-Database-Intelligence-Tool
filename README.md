@@ -1,6 +1,6 @@
-# blah blah
+# AtlasDB - An Intelligent AI-Powered Data Dictionary Agent
 
-## fetaure
+## Features
 
 1. **Upload relational database** as a ZIP of CSV tables.
 2. **AI Summary**: Generates a concise, business-friendly summary of the database.
@@ -14,7 +14,7 @@
 
 ---
 
-## tech Stack
+## Tech Stack
 
 - **Streamlit**: Web app interface  
 - **pandas**: Data handling and profiling  
