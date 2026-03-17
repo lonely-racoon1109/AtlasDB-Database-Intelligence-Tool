@@ -8,16 +8,12 @@ def generate_schema(tables):
     pk_map = {}
     fk_map = {}
 
-    # -----------------------------
     # Track where columns appear
-    # -----------------------------
     for table_name, df in tables.items():
         for col in df.columns:
             column_usage.setdefault(col, []).append(table_name)
 
-    # -----------------------------
-    # Detect PK candidates
-    # -----------------------------
+    # DETECT PK CANDIDATES
     pk_candidates = {}
 
     for table_name, df in tables.items():
@@ -46,15 +42,13 @@ def generate_schema(tables):
                         "ratio": ratio
                     }
 
-    # -----------------------------
-    # Assign PK
-    # -----------------------------
+
+    # ASSIGN PK
     for col, data in pk_candidates.items():
         pk_map[col] = data["table"]
 
-    # -----------------------------
-    # Detect FK
-    # -----------------------------
+
+    # DETECT FK
     for col, tables_list in column_usage.items():
 
         if col not in pk_map:
@@ -67,9 +61,8 @@ def generate_schema(tables):
             if table != pk_table:
                 fk_map.setdefault(table, []).append(col)
 
-    # -----------------------------
-    # Build Schema Output
-    # -----------------------------
+
+    # Build Schema 
     for table_name, df in tables.items():
 
         columns = {}

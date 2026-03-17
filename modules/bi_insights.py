@@ -1,10 +1,9 @@
 from groq import Groq
 import streamlit as st
-import os
-import json
 
 client = Groq(api_key=st.secrets["GROQ_API_KEY"])
 
+@st.cache_data
 def build_db_description(schema):
 
     desc = ""
@@ -21,6 +20,7 @@ def build_db_description(schema):
 
     return desc
 
+@st.cache_data
 def generate_db_summary(schema):
 
     db_text = build_db_description(schema)
@@ -48,6 +48,7 @@ def generate_db_summary(schema):
 
     return response.choices[0].message.content
 
+@st.cache_data
 def generate_business_insights(dq_summary):
 
     insights_text = ""
@@ -88,43 +89,46 @@ def generate_business_insights(dq_summary):
 
     return response.choices[0].message.content
 
+@st.cache_data
 def generate_data_dictionary(schema):
 
     dictionary = {}
 
     for table, data in schema.items():
 
+        cols = "\n".join(
+            [f"{col} ({meta['dtype']})" for col, meta in data["columns"].items()]
+        )
+
+        prompt = f"""
+        Explain the following database columns in simple business language.
+
+        Table: {table}
+
+        Columns:
+        {cols}
+
+        Return strictly in this format:
+
+        column_name : description
+        """
+
+        response = client.chat.completions.create(
+            model="openai/gpt-oss-20b",
+            messages=[{"role": "user", "content": prompt}],
+            temperature=0.2
+        )
+
+        text = response.choices[0].message.content
+
         dictionary[table] = {}
 
-        for col, meta in data["columns"].items():
-
-            prompt = f"""
-Explain this database column based on its table schema in simple business language.
-
-Table: {table}
-Column: {col}
-Type: {meta["dtype"]}
-
-Return ONLY one short sentence description.
-"""
-
-            try:
-
-                response = client.chat.completions.create(
-                    model="openai/gpt-oss-20b",
-                    messages=[{"role": "user", "content": prompt}],
-                    temperature=0.2
-                )
-
-                desc = response.choices[0].message.content.strip()
-
-            except:
-                desc = ""
-
-            # fallback if model fails
-            if not desc:
-                desc = col.replace("_"," ") + " field"
-
-            dictionary[table][col] = desc
+        for line in text.split("\n"):
+            if ":" in line:
+                col, desc = line.split(":", 1)
+                dictionary[table][col.strip()] = desc.strip()
 
     return dictionary
+
+
+

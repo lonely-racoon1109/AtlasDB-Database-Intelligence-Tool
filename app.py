@@ -3,27 +3,45 @@ import zipfile
 import pandas as pd
 import streamlit.components.v1 as components
 
+#IMPORTS FROM APP MODULES
 from modules.schema_extractor import generate_schema
 from modules.graph_builder import build_graph, build_er_diagram
 from modules.dq_metrics import generate_data_quality
-from modules.bi_insights import generate_business_insights, generate_data_dictionary
-from modules.bi_insights import generate_db_summary
+from modules.bi_insights import (
+    generate_db_summary,
+    generate_business_insights,
+    generate_data_dictionary
+)
 from modules.report import generate_markdown_report, convert_to_pdf
 
+#PAGE CONFIGURATIONS
 st.set_page_config(
     page_title="AI Database Intelligence Agent",
     layout="wide"
 )
 
+#FILE UPLOAD
 uploaded_file = st.file_uploader(
     "Upload dataset.zip containing CSV tables",
     type=["zip"]
 )
 
 if uploaded_file is not None:
+#CLEAR AI RESULTS OF PREVIOUS DATASET
+    dataset_hash = uploaded_file.name
+
+    if "dataset_hash" not in st.session_state or st.session_state.dataset_hash != dataset_hash:
+
+        st.session_state.pop("ai_insights", None)
+        st.session_state.pop("data_dictionary", None)
+        st.session_state.pop("ai_summary", None)
+
+    st.session_state.dataset_hash = dataset_hash
+
     with st.spinner("Uploading and processing dataset......"):
         tables={}
 
+#LOAD DATASET
         with zipfile.ZipFile(uploaded_file) as z:
             file_list = z.namelist()
             st.write("Files detected: ")
@@ -40,27 +58,13 @@ if uploaded_file is not None:
                         tables[table_name]  = df
         
     st.success("Dataset loaded successfully")
-    
+
+# GENERATE SCHEMA OF UPLOADED DATABASE 
     with st.spinner("Analyzing database structure..."):
         schema = generate_schema(tables)
     st.session_state["schema"] = schema
 
-    st.markdown('<div id="results"></div>', unsafe_allow_html=True)
-
-    components.html(
-    """
-    <script>
-    setTimeout(function() {
-        const element = window.parent.document.getElementById("results");
-        if (element) {
-            element.scrollIntoView({behavior: "smooth"});
-        }
-    }, 100);
-    </script>
-    """,
-    height=0
-    )
-
+# CHATBOT SIDEBAR (COLLAPSABLE)
     with st.sidebar:
         if "chat_open" not in st.session_state:
             st.session_state.chat_open = True
@@ -74,13 +78,22 @@ if uploaded_file is not None:
                 st.write(f"User: {user_input}")
                 st.write("Bot: [This is a prototype. No response yet.]")
 
+# DATABASE SUMMARY
     st.header("AI Database Summary")
-    # summary = "hi"
-    with st.spinner("Analyzing database structure..."):
-        summary = generate_db_summary(schema)
+    summary = "hi"
+    dataset_hash = hash(str(schema))
+
+    if "schema_hash" not in st.session_state or st.session_state.schema_hash != dataset_hash:
+
+        with st.spinner("Generating AI summary..."):
+            st.session_state.ai_summary = generate_db_summary(schema)
+            st.session_state.schema_hash = dataset_hash
+
+    summary = st.session_state.ai_summary
 
     st.markdown(summary)
 
+# TABLES AND ROW COUNTS
     st.write("Tables:", len(schema))
     total_rows = sum([v["rows"] for v in schema.values()])
 
@@ -88,12 +101,10 @@ if uploaded_file is not None:
 
     st.divider()
 
-    st.header("Data Dictionary")
-
+# HUMAN READABLE AI-GENERATED DATA DICTIONARY
     if "data_dictionary" not in st.session_state:
 
         with st.spinner("Generating AI Data Dictionary..."):
-
             st.session_state["data_dictionary"] = generate_data_dictionary(schema)
 
     data_dictionary = st.session_state["data_dictionary"]
@@ -114,15 +125,33 @@ if uploaded_file is not None:
 
         st.table(rows)
 
-
+# LEFT AND RIGHT DIVISION (60-40) FOR INTERACTIVE DIAGRAM AND SCHEMA SUMMARY
     left_col,right_col = st.columns([3,2])
 
+# ER DIAGRAM AND KNOWLEDGE BASED DIAGRAM
+    with left_col:
+            st.subheader("Database Graph")
+            view = st.radio(
+                label="Graph View",
+                options=[ "Knowledge Graph", "ER Diagram"],
+                horizontal=True,
+                label_visibility="collapsed"
+            )
+
+            if view == "Knowledge Graph":
+                net = build_graph(schema, tables)
+                net.save_graph("graph.html")
+
+                HtmlFile = open("graph.html", "r", encoding="utf-8")
+                components.html(HtmlFile.read(), height=650)
+            else:
+                er = build_er_diagram(schema)
+                st.graphviz_chart(er, use_container_width=True, height=650)
+
+# DATABASE SCHEMA 
     with right_col:
-
         st.subheader("Database Schema")
-
-        with st.container(height=650):
-
+        with st.container(height=700):
                 for table_name, table_data in schema.items():
 
                     st.markdown(f"**{table_name} ({table_data['rows']} rows)**")
@@ -139,32 +168,12 @@ if uploaded_file is not None:
                     }, inplace=True)
 
                     df_schema = df_schema[["Column", "Type", "Constraints"]]
-
                     st.table(df_schema)
-    
-    with left_col:
-            st.subheader("Database Graph")
-            view = st.radio(
-                label="Graph View",
-                options=["ER Diagram", "Knowledge Graph"],
-                horizontal=True,
-                label_visibility="collapsed"
-            )
 
-            if view == "ER Diagram":
-                er = build_er_diagram(schema)
-                st.graphviz_chart(er, use_container_width=True, height=650)
-            else:
-                net = build_graph(schema, tables)
-                net.save_graph("graph.html")
-
-                HtmlFile = open("graph.html", "r", encoding="utf-8")
-                components.html(HtmlFile.read(), height=650)
-    
+# DATA QUALITY METRICS
+    st.markdown("### Data Quality Metrics")
 
     dq_summary = generate_data_quality(tables)
-
-    st.markdown("### Data Quality Metrics")
 
     dq_table = []
 
@@ -186,14 +195,19 @@ if uploaded_file is not None:
 
     st.dataframe(dq_df, use_container_width=True)
     
+# BUSINESS INSIGHTS 
     st.markdown("### Business Insights (AI Generated)")
 
     with st.container():
-        with st.spinner("Generating AI insights..."):
-            ai_insights = generate_business_insights(dq_summary)
-        st.markdown(ai_insights)
-    # ai_insights = "ai"
+        if "ai_insights" not in st.session_state:
+            with st.spinner("Generating AI insights..."):
+                st.session_state["ai_insights"] = generate_business_insights(dq_summary)
 
+        ai_insights = st.session_state["ai_insights"]
+
+        st.markdown(ai_insights)
+
+# REPORT GENERATION (MARKDOWN -> PDF)
     md_report = generate_markdown_report(
     summary,
     schema,

@@ -6,7 +6,6 @@ def detect_cardinality(df, fk_col):
     total_rows = len(df)
     return "1-1" if unique_vals >= total_rows * 0.98 else "1-N"
 
-
 def build_graph(schema, tables):
 
     net = Network(
@@ -42,7 +41,7 @@ def build_graph(schema, tables):
         )
 
     # ---------- ADD FK EDGES ----------
-    # Use FK info from schema instead of guessing table names
+    # Use FK info from schema 
     for table, data in schema.items():
         for col, meta in data["columns"].items():
             if meta["constraints"] == "FK":
@@ -68,11 +67,6 @@ def build_graph(schema, tables):
                         smooth="cubicBezier"
                     )
 
-
-
-    # ---------- HOVER HIGHLIGHT ----------
-    # Inside build_rigid_graph / build_graph
-    # After adding nodes and edges
     net.set_options("""
     {
     "interaction": {
@@ -103,9 +97,8 @@ def build_er_diagram(schema):
     dot.attr(nodesep="0.8")
     dot.attr(ranksep="1")
 
-    # ---------- ENTITIES ----------
+    # ENTITIES 
     for table in schema.keys():
-
         dot.node(
             table,
             shape="box",
@@ -114,13 +107,10 @@ def build_er_diagram(schema):
             fillcolor="white"
         )
 
-    # ---------- ATTRIBUTES ----------
+    # ATTRIBUTES
     for table, data in schema.items():
-
         for col, meta in data["columns"].items():
-
             attr_id = f"{table}_{col}"
-
             label = col
 
             if meta["constraints"] == "PK":
@@ -137,13 +127,11 @@ def build_er_diagram(schema):
 
             dot.edge(table, attr_id)
 
-    # ---------- RELATIONSHIPS ----------
+    # RELATIONSHIPS 
     for table, data in schema.items():
-
         for col, meta in data["columns"].items():
 
             if meta["constraints"] == "FK":
-
                 parent = None
 
                 for t, d in schema.items():
@@ -155,7 +143,6 @@ def build_er_diagram(schema):
                         break
 
                 if parent:
-
                     rel_name = f"{parent}_{table}_rel"
 
                     dot.node(
