@@ -7,49 +7,27 @@ AtlasDB transforms raw relational databases into structured insights, visualizat
 
 - **Dataset Upload**  
   Upload relational databases as a ZIP of CSV tables.
-
 - **AI Summary**  
   Generates concise, business-friendly database overviews.
-
 - **Interactive Graph + ER Diagram**  
   Explore table relationships through knowledge graphs and structured ER diagrams.
-
 - **Schema Overview**  
   View tables, columns, data types, constraints, missing values, and uniqueness.
-
 - **AI Data Dictionary**  
   Human-readable descriptions for each column.
-
 - **Data Quality Metrics**  
   Completeness, duplicates, memory usage, and column-level statistics.
-
 - **Business Insights**  
   AI-generated high-level interpretations of the dataset.
-
 - **Downloadable Report**  
   Export a PDF containing schema, diagrams, insights, and analysis.
+- Sidebar interface for querying the database *(UI only, no AI integration yet)*.
 
-- **Chatbot Prototype**  
-  Sidebar interface for querying the database *(UI only, no AI integration yet)*.
+- Uses AI-generated summaries, dictionaries, and insights are cached using `st.session_state` to avoid redundant API calls.
 
 ---
 
-##  Performance & Optimization
-
-- **Cached AI Outputs**  
-  AI-generated summaries, dictionaries, and insights are cached using `st.session_state` to avoid redundant API calls.
-
-- **Single-Pass AI Processing**  
-  Entire schema is processed in a single API call instead of per-table requests.
-
-- **Efficient Data Profiling**  
-  Schema and quality metrics are computed in minimal passes using Pandas.
-
-- **Fallback Handling**  
-  Ensures all columns receive descriptions even if AI output is incomplete.
-
 > AtlasDB is optimized for fast, cost-efficient, and scalable database analysis.
-
 
 
 ##  Demo
