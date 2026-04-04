@@ -6,13 +6,13 @@ import streamlit.components.v1 as components
 #IMPORTS FROM APP MODULES
 from modules.schema_extractor import generate_schema
 from modules.graph_builder import build_graph, build_er_diagram
-from modules.dq_metrics import generate_data_quality
+from modules.dataquality_metrics import generate_data_quality
 from modules.bi_insights import (
     generate_db_summary,
     generate_business_insights,
     generate_data_dictionary
 )
-from modules.report import generate_markdown_report, convert_to_pdf
+from modules.report_generate import generate_markdown_report, convert_to_pdf
 
 #PAGE CONFIGURATIONS
 st.set_page_config(

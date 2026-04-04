@@ -1,93 +1,142 @@
-# AtlasDB - An Intelligent AI-Powered Data Dictionary Agent
+# AtlasDB – AI-Powered Database Intelligence Tool
 
-## Features
+AtlasDB transforms raw relational databases into structured insights, visualizations, and AI-generated documentation — instantly.
 
-1. **Upload relational database** as a ZIP of CSV tables.
-2. **AI Summary**: Generates a concise, business-friendly summary of the database.
-3. **Interactive ER / Knowledge Graph**: Explore tables and relationships visually.
-4. **Schema Overview**: See tables, columns, types, constraints, missing values, and unique counts.
-5. **Data Dictionary**: AI-generated, human-readable descriptions for each column.
-6. **Data Quality Metrics**: Completeness, duplicates, memory usage, numeric/categorical column stats.
-7. **Business Insights**: AI-generated high-level insights from the database.
-8. **Downloadable Report**: PDF containing summary, ER diagram, schema, data quality, and insights.
-9. **Chatbot Prototype**: Sidebar UI for asking questions (currently static placeholder).No AI processing YET.
+
+##  Features
+
+- **Dataset Upload**  
+  Upload relational databases as a ZIP of CSV tables.
+
+- **AI Summary**  
+  Generates concise, business-friendly database overviews.
+
+- **Interactive Graph + ER Diagram**  
+  Explore table relationships through knowledge graphs and structured ER diagrams.
+
+- **Schema Overview**  
+  View tables, columns, data types, constraints, missing values, and uniqueness.
+
+- **AI Data Dictionary**  
+  Human-readable descriptions for each column.
+
+- **Data Quality Metrics**  
+  Completeness, duplicates, memory usage, and column-level statistics.
+
+- **Business Insights**  
+  AI-generated high-level interpretations of the dataset.
+
+- **Downloadable Report**  
+  Export a PDF containing schema, diagrams, insights, and analysis.
+
+- **Chatbot Prototype**  
+  Sidebar interface for querying the database *(UI only, no AI integration yet)*.
 
 ---
 
-## Tech Stack
+##  Performance & Optimization
 
-- **Streamlit**: Web app interface  
-- **pandas**: Data handling and profiling  
-- **zipfile**: Upload and read CSV files  
-- **pyvis and graphviz**: Interactive ER/knowledge graph visualization  
-- **OpenAI / GROQ**: AI-powered summary, data dictionary, and business insights  
-- **markdown + WeasyPrint**: Generate PDF reports from Markdown  
+- **Cached AI Outputs**  
+  AI-generated summaries, dictionaries, and insights are cached using `st.session_state` to avoid redundant API calls.
 
----
+- **Single-Pass AI Processing**  
+  Entire schema is processed in a single API call instead of per-table requests.
 
-## Installation
+- **Efficient Data Profiling**  
+  Schema and quality metrics are computed in minimal passes using Pandas.
 
-1. **Clone the repository**
-2. **Create a virtual environment**
-3. **Install dependencies**:
+- **Fallback Handling**  
+  Ensures all columns receive descriptions even if AI output is incomplete.
 
-```
-streamlit
-pandas
-pyvis (graphs)
-graphvis (er-diagram)
-weasyprint (report)
-groq (LLM)
-markdown
-```
-4. **Set API credentials** for AI calls:
+> AtlasDB is optimized for fast, cost-efficient, and scalable database analysis.
 
-make a .streamlit folder in your folder and in that make a secrets.toml file and paste your key there:
 
-``` toml
-GROQ_API_KEY="<key>"
-```
 
-use:
+##  Demo
 
-```python
-from groq import GROQ
-client = GROQ(api_key="YOUR_API_KEY")
-```
+![](demo.gif)
 
-5. **Run the app**:
 
-```bash
-streamlit run app.py
-```
----
-
-## Folder Structure
+##  Project Structure
 
 ```
-ai-db-intelligence/
+AtlasDB/
 │
-├─ app.py                 # Main Streamlit app
+├─ app.py
+├─ demo.gif
 ├─ modules/
-│   ├─ schema_extractor.py # Generate schema and data quality
-│   ├─ graph_builder.py    # Build pyvis ER/knowledge graph
-│   ├─ dq_metrics.py  #data qualit metrics
-│   ├─ report.py    # report generator
-│   └─ bi_insights.py    # summary, data dictionary and business intelligence generator              
+│   ├─ schema_extractor.py
+│   ├─ graph_builder.py
+│   ├─ dq_metrics.py
+│   ├─ report.py
+│   └─ bi_insights.py
 ├─ requirements.txt
 └─ README.md
 ```
 
----
+##  Tech Stack
 
-## Notes
-
-* Ensure **GROQ API keys** are valid and set before generating AI-based summaries or data dictionary.
-* ER diagram is generated automatically and saved as an image for PDF inclusion.
-* Data dictionary and business insights are AI-generated; incomplete descriptions may occur for very noisy datasets.
-* Chatbot is currently a **UI prototype** only.
-
+- **Frontend:** Streamlit  
+- **Backend:** Python, pandas  
+- **Visualization:** pyvis, graphviz  
+- **AI Layer:** GROQ (LLM API)  
+- **Reporting:** markdown + WeasyPrint  
 
 
+##  Installation
+
+1. **Clone the repository**
+2. **Create virtual environment**
+3. **Install dependencies**
+
+```bash
+pip install -r requirements.txt
+````
+
+Or manually:
+
+```
+streamlit
+pandas
+pyvis
+graphviz
+weasyprint
+groq
+markdown
+```
+
+
+##  API Setup
+
+Create a `.streamlit/secrets.toml` file in project directory:
+
+```toml
+GROQ_API_KEY = "your_api_key_here"
+```
+
+Use in code:
+
+```python
+from groq import Groq
+client = Groq(api_key=st.secrets["GROQ_API_KEY"])
+```
+
+
+##  Run the App
+
+```bash
+streamlit run app.py
+```
+
+
+##  Notes
+
+* AI-generated outputs depend on dataset quality and schema clarity.
+* ER diagrams are automatically generated and included in reports.
+* Chatbot is currently a **UI prototype** (no backend processing yet).
+
+## License
+
+This project is licensed under the [MIT License](LICENSE).
 
 
