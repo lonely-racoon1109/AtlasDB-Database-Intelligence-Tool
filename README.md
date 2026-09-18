@@ -21,7 +21,7 @@ AtlasDB transforms raw relational databases into structured insights, visualizat
   AI-generated high-level interpretations of the dataset.
 - **Downloadable Report**  
   Export a PDF containing schema, diagrams, insights, and analysis.
-- Sidebar interface for querying the database *(UI only, no AI integration yet)*.
+  Sidebar interface for querying the database and asking user queries.
 
 - Uses AI-generated summaries, dictionaries, and insights are cached using `st.session_state` to avoid redundant API calls.
 
